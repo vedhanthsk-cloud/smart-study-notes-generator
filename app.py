@@ -12,7 +12,7 @@ def load_model():
     global tokenizer, model, model_loaded
     if model_loaded:
         return
-    model_name = "facebook/bart-large-cnn"
+    model_name = "facebook/bart-base"
     tokenizer = BartTokenizer.from_pretrained(model_name)
     model = BartForConditionalGeneration.from_pretrained(model_name)
     model_loaded = True
