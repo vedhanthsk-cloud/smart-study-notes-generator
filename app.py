@@ -4,15 +4,26 @@ from transformers import BartForConditionalGeneration, BartTokenizer
 
 app = FastAPI()
 
-# Load model and tokenizer once at startup
-model_name = "facebook/bart-large-cnn"
-tokenizer = BartTokenizer.from_pretrained(model_name)
-model = BartForConditionalGeneration.from_pretrained(model_name)
+# Globals for model & tokenizer
+tokenizer = None
+model = None
+model_loaded = False
+
+def load_model():
+    global tokenizer, model, model_loaded
+    if model_loaded:
+        return
+    model_name = "facebook/bart-large-cnn"
+    tokenizer = BartTokenizer.from_pretrained(model_name)
+    model = BartForConditionalGeneration.from_pretrained(model_name)
+    model_loaded = True
 
 def count_words(text: str) -> int:
     return len(text.strip().split())
 
 def summarize_text(text: str, max_len: int = 150, min_len: int = 30) -> str:
+    load_model()  # ensure model is loaded
+
     inputs = tokenizer(
         text,
         return_tensors="pt",
@@ -263,59 +274,3 @@ async def generate_notes(text: str = Form(...)):
 
     <div class="card">
       <form method="post">
-        <label for="text">Enter a paragraph</label>
-        <textarea name="text" id="text" placeholder="Paste or type your paragraph here..." required>{text}</textarea>
-        <div style="margin-top: 14px;">
-          <button type="submit">Generate Notes</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="card">
-      <h2>Results</h2>
-
-      <div class="original-box">
-        <div class="section-title">Original text</div>
-        <div style="white-space: pre-wrap; background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
-{text}
-        </div>
-      </div>
-
-      <div class="summary-box">
-        <div class="section-title" style="margin-top: 16px;">Summary</div>
-        <div style="white-space: pre-wrap; background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 8px; padding: 12px;">
-{summary}
-        </div>
-      </div>
-
-      <div class="points-box">
-        <div class="section-title" style="margin-top: 16px;">Key points</div>
-        <ul>
-          {points_html}
-        </ul>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-box">
-          <div class="stat-label">Original words</div>
-          <div class="stat-value">{orig_words}</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Summary words</div>
-          <div class="stat-value">{sum_words}</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Text reduction</div>
-          <div class="stat-value" style="color: var(--success);">{reduction_pct}%</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer">
-      Mini Project – Generative AI
-    </div>
-  </div>
-</body>
-</html>
-"""
-    return HTMLResponse(rendered)
