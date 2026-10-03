@@ -22,7 +22,7 @@ def count_words(text: str) -> int:
     return len(text.strip().split())
 
 def summarize_text(text: str, max_len: int = 150, min_len: int = 30) -> str:
-    load_model()  # ensure model is loaded
+    load_model()
 
     inputs = tokenizer(
         text,
@@ -202,13 +202,13 @@ BASE_STYLE = """
 </style>
 """
 
-HTML_FORM = f"""
+HTML_FORM = """
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>Smart Study Notes Generator</title>
-  {BASE_STYLE}
+""" + BASE_STYLE + """
 </head>
 <body>
   <div class="container">
@@ -259,18 +259,16 @@ async def generate_notes(text: str = Form(...)):
 
     points_html = "".join(f"<li>{p}</li>" for p in key_points)
 
-    rendered = f"""
+    # Build HTML using .format() to avoid complex f-string issues
+    rendered = """
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>Smart Study Notes Generator</title>
-  {BASE_STYLE}
+{style}
 </head>
 <body>
   <div class="container">
     <h1>Smart Study Notes Generator</h1>
-    <p class="subtitle">Generate concise summaries and key points from any paragraph using AI</p>
-
-    <div class="card">
-      <form method="post">
+    <p class="subtitle">Generate concise
